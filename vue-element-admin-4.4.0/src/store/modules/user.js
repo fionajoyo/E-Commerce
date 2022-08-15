@@ -29,12 +29,15 @@ const mutations = {
 }
 
 const actions = {
-  // user login
-  login({ commit }, userInfo) {
+  // 用户登录
+  async login({ commit }, userInfo) {
     const { username, password } = userInfo
+    // 使用promise的写法
+    // let res = await login({ username: username.trim(), password: password })
     return new Promise((resolve, reject) => {
       login({ username: username.trim(), password: password }).then(response => {
         const { data } = response
+        // 提交token
         commit('SET_TOKEN', data.token)
         setToken(data.token)
         resolve()
@@ -44,9 +47,10 @@ const actions = {
     })
   },
 
-  // get user info
+  // 用户权限
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
+      // 获取用户权限（发送请求）
       getInfo(state.token).then(response => {
         const { data } = response
 
@@ -56,7 +60,7 @@ const actions = {
 
         const { roles, name, avatar, introduction } = data
 
-        // roles must be a non-empty array
+        // roles 不为空
         if (!roles || roles.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
         }
