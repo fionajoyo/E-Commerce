@@ -94,44 +94,31 @@ export const constantRoutes = [
 export const asyncRoutes = [
   // 权限管理
   {
-    path: '/permission',
+    name: 'Acl',
+    path: '/acl',
     component: Layout,
-    redirect: '/permission/page',
-    alwaysShow: true, // will always show the root menu
-    name: 'Permission',
+    redirect: '/acl/user/list',
     meta: {
-      title: 'Permission',
-      icon: 'lock',
-      roles: ['admin', 'editor'] // you can set roles in root nav
+      title: '权限管理',
+      icon: 'el-icon-lock'
     },
     children: [
       {
-        path: 'page',
-        component: () => import('@/views/permission/page'),
-        name: 'PagePermission',
+        name: 'User',
+        path: 'user/list',
+        component: () => import('@/views/product/acl/user/list'),
         meta: {
-          title: 'Page Permission',
-          roles: ['admin'] // or you can only set roles in sub nav
-        }
+          title: '用户管理',
+        },
       },
       {
-        path: 'directive',
-        component: () => import('@/views/permission/directive'),
-        name: 'DirectivePermission',
+        name: 'Role',
+        path: 'role/list',
+        component: () => import('@/views/product/acl/role/list'),
         meta: {
-          title: 'Directive Permission'
-          // if do not set roles, means: this page does not require permission
-        }
+          title: '角色管理',
+        },
       },
-      {
-        path: 'role',
-        component: () => import('@/views/permission/role'),
-        name: 'RolePermission',
-        meta: {
-          title: 'Role Permission',
-          roles: ['admin']
-        }
-      }
     ]
   },
 
