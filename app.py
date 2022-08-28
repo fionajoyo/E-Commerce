@@ -69,6 +69,17 @@ class user_info(db.Model):
     password=db.Column(db.String(255),nullable=False)
     user_level=db.Column(db.String(255),nullable=False)
 
+class com_info(db.Model):
+    __table__name='com_info'
+    com_id=db.Column(db.String(255),nullable=False,primary_key=True)
+    com_title=db.Column(db.String(255),nullable=False)
+    com_class=db.Column(db.String(255),nullable=False)
+    com_price=db.Column(db.String(255),nullable=False)
+    user_id=db.Column(db.String(255),nullable=False)
+    brand_id=db.Column(db.String(255),nullable=False)
+    com_discount=db.Column(db.String(255),nullable=False)
+    com_state=db.Column(db.String(255),nullable=False)
+
 
 @app.route('/login',methods=['POST'])
 def login():
@@ -84,9 +95,9 @@ def login():
         if user:
             token = create_token(u_id)
 
-            return jsonify(code=200,msg='success',data=token)
+            return jsonify(code=0,msg='success',data=token)
         else:
-            return jsonify(code=2001,msg='登录失败') # 登录失败
+            return jsonify(code=1000,msg='登录失败') # 登录失败
     else:
         return jsonify(code=400,msg='bad request')
 
@@ -121,21 +132,15 @@ def register():
     u_id=request.form['id']
     user = user_info.query.filter_by(user_id=u_id).first()
 
-    state={
-        'user_id':u_id,
-        'state':''
-    }
-
     if user:
-        state['state']='fail'
-        return json.dumps(state),200
+
+        return jsonify(code=1005,msg='用户已经存在')
     else:
         try:
             temp = user_info(user_name=u_name,user_id=u_id, password=p_word,user_level='1')
             db.session.add(temp)
             db.session.commit()
-            state['state'] = 'success'
-            return json.dumps(state),200
+            return jsonify(code=0,msg='注册成功')
         except Exception as e:
             db.session.rollback()   #回滚
             raise e
@@ -144,6 +149,10 @@ def register():
 @app.route('/addbrand',methods=['POST'])
 @login_required
 def addbrand():
+    #Post params:
+    # token
+    # brandid
+    # brandname
     token=request.form['token']
     user=verify_token(token)
     if user:
@@ -159,14 +168,13 @@ def addbrand():
             'state': ''
         }
         if brand:
-            state['state']='品牌id已经存在'
-            return json.dumps(state),200
+            return jsonify(code=1006,msg='品牌id已经存在')
         else:
             try:
                 temp = brand_info(brand_id=b_id,brand_name=b_name,brand_salescount='0',brand_state='0')
                 db.session.add(temp)
                 db.session.commit()
-                return jsonify(code=200,msg='添加品牌成功')
+                return jsonify(code=0,msg='添加品牌成功')
 
             except Exception as e:
                 db.session.rollback()
@@ -177,7 +185,83 @@ def addbrand():
 @app.route('/delbrand',methods=['POST'])
 @login_required
 def delbrand():
-    b_id=request.form['brandid']
+    #Post params：
+    # token
+    # brandid
+    token = request.form['token']
+    user = verify_token(token)
+    if user:
+        print(user.user_level)
+        if user.user_level != '2':
+            return jsonify(code=1004, msg='用户权限不足')
+        b_id = request.form['brandid']
+        try:
+            brand_info.query.filter_by(brand_id=b_id).delete()
+            db.session.commit()
+            return jsonify(code=0,msg='删除成功')
+        except Exception as e:
+            db.session.rollback()
+            return jsonify(code=1008,msg='品牌删除失败')
+            raise e
+
+@app.route('/addcom',methods=['POST'])
+@login_required
+def addcom():
+    token=request.form['token']
+
+    user = verify_token(token)
+    if user:
+        print(user.user_level)
+        if user.user_level == '0':
+            return jsonify(code=1004, msg='用户权限不足')
+        c_id=request.form['comid']
+
+        c_title=request.form['comtitle']
+        c_class=request.form['comclass']
+        c_price=request.form['comprice']
+        u_id=user.user_id
+        b_id=request.form['brandid']
+        c_discount=request.form['discount']
+        c_state='0'
+        print(c_id,c_title,c_class,c_price,u_id,b_id,c_discount,c_state)
+
+        try:
+            com=com_info.query.filter_by(com_id=c_id).first()
+            if com:
+                return jsonify(code=1009,msg='商品已经存在')
+            temp = com_info(com_id=c_id, com_title=c_title, com_class=c_class, com_price=c_price, user_id=u_id,
+                            brand_id=b_id, com_discount=c_discount, com_state=c_state)
+            db.session.add(temp)
+            db.session.commit()
+            return jsonify(code=0,msg='添加商品成功')
+        except Exception as e:
+            print(e)
+            db.session.rollback()
+            return jsonify(code=1007,msg='上传商品失败')
+
+
+
+@app.route('/delcom',methods=['POST'])
+@login_required
+def delcom():
+    #Post params：
+    # token
+    # comid
+    token = request.form['token']
+    user = verify_token(token)
+    if user:
+        print(user.user_level)
+        if user.user_level == '0':
+            return jsonify(code=1004, msg='用户权限不足')
+        c_id = request.form['comid']
+        try:
+            com_info.query.filter_by(com_id=c_id).delete()
+            db.session.commit()
+            return jsonify(code=0,msg='商品删除成功')
+        except Exception as e:
+            db.session.rollback()
+            return jsonify(code=1010,msg='商品删除失败')
+            raise e
 
 
 
