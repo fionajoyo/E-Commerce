@@ -74,11 +74,41 @@ def register():
         state['state']='fail'
         return json.dumps(state),200
     else:
-        temp = user_info(user_name=u_name,user_id=u_id, password=p_word,user_level='1')
-        db.session.add(temp)
-        db.session.commit()
-        state['state'] = 'success'
+        try:
+            temp = user_info(user_name=u_name,user_id=u_id, password=p_word,user_level='1')
+            db.session.add(temp)
+            db.session.commit()
+            state['state'] = 'success'
+            return json.dumps(state),200
+        except Exception as e:
+            db.session.rollback()   #回滚
+            raise e
+
+
+@app.route('/addbrand',methods=['POST'])
+def addbrand():
+    print(request.form)
+    b_id = request.form['brandid']
+
+    b_name = request.form['brandname']
+    user = brand_info.query.filter_by(brand_id=b_id).first()
+    state = {
+        'brand_id': b_id,
+        'state': ''
+    }
+    if user:
+        state[state]='品牌已经存在'
         return json.dumps(state),200
+    else:
+        try:
+            temp = brand_info(brand_id=b_id,brand_name=b_name,brand_salescount='0',brand_level='0')
+            db.session.add(temp)
+            db.session.commit()
+            state[state] = 'success'
+
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
 
 
