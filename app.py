@@ -9,11 +9,46 @@
 @FileName: app2.py
 """
 
-from flask import Flask,render_template,request
+from flask import Flask, render_template, request, jsonify, current_app
 from flask_sqlalchemy import SQLAlchemy
 import json
 import config
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+import functools
 import datetime
+
+def create_token(api_user):
+    '''
+    生成token
+    :param api_user:用户id
+    :return: token
+    '''
+
+    # 第一个参数是内部的私钥，这里写在共用的配置信息里了，如果只是测试可以写死
+    # 第二个参数是有效期(秒)
+    s = Serializer(config.SECRET_KEY, expires_in=3600)
+    # 接收用户id转换与编码
+    token = s.dumps({"id": api_user}).decode("ascii")
+    return token
+
+
+def verify_token(token):
+    '''
+    校验token
+    :param token:
+    :return: 用户信息 or None
+    '''
+
+    # 参数为私有秘钥，跟上面方法的秘钥保持一致
+    s = Serializer(config.SECRET_KEY)
+    try:
+        # 转换为字典
+        data = s.loads(token)
+    except Exception:
+        return None
+    # 拿到转换后的数据，根据模型类去数据库查询用户信息
+    user = user_info.query.filter_by(user_id=data["id"]).first()
+    return user
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']=config.DB_URI
@@ -38,22 +73,43 @@ class user_info(db.Model):
 @app.route('/login',methods=['POST'])
 def login():
     # print(request)
-    u_name = request.form['username']
+    u_id = request.form['userid']
     # print(u_name)
     p_word = request.form['password']
-    # print(p_word)
-    state={
-        "username":u_name,
-        "state":""
-    }
-    user = user_info.query.filter_by(user_name=u_name, password=p_word).first()
-    if user:
-        state['state']="success"
-        return json.dumps(state),200  # 登录成功
-    else:
-        state['state'] = "fail"
-        return json.dumps(state),200 # 登录失败
 
+    if u_id and p_word:
+
+
+        user = user_info.query.filter_by(user_id=u_id, password=p_word).first()
+        if user:
+            token = create_token(u_id)
+
+            return jsonify(code=200,msg='success',data=token)
+        else:
+            return jsonify(code=2001,msg='登录失败') # 登录失败
+    else:
+        return jsonify(code=400,msg='bad request')
+
+
+def login_required(view_func):
+    @functools.wraps(view_func)
+    def verify_token(*args, **kwargs):
+        try:
+            # 在请求头上拿到token
+            token = request.form["token"]
+        except Exception:
+
+            return jsonify(code=1001, msg='缺少参数token')
+
+        s = Serializer(config.SECRET_KEY)
+        try:
+            s.loads(token)
+        except Exception:
+            return jsonify(code=1002, msg="登录已过期")
+
+        return view_func(*args, **kwargs)
+
+    return verify_token
 
 
 @app.route('/register',methods=['POST'])
@@ -86,29 +142,42 @@ def register():
 
 
 @app.route('/addbrand',methods=['POST'])
+@login_required
 def addbrand():
-    print(request.form)
-    b_id = request.form['brandid']
-
-    b_name = request.form['brandname']
-    user = brand_info.query.filter_by(brand_id=b_id).first()
-    state = {
-        'brand_id': b_id,
-        'state': ''
-    }
+    token=request.form['token']
+    user=verify_token(token)
     if user:
-        state[state]='品牌已经存在'
-        return json.dumps(state),200
-    else:
-        try:
-            temp = brand_info(brand_id=b_id,brand_name=b_name,brand_salescount='0',brand_level='0')
-            db.session.add(temp)
-            db.session.commit()
-            state[state] = 'success'
+        print(user.user_level)
+        if user.user_level!='2':
+            return jsonify(code=1004,msg='用户权限不足')
+        b_id = request.form['brandid']
+        print(b_id)
+        b_name = request.form['brandname']
+        brand = brand_info.query.filter_by(brand_id=b_id).first()
+        state = {
+            'brand_id': b_id,
+            'state': ''
+        }
+        if brand:
+            state['state']='品牌id已经存在'
+            return json.dumps(state),200
+        else:
+            try:
+                temp = brand_info(brand_id=b_id,brand_name=b_name,brand_salescount='0',brand_state='0')
+                db.session.add(temp)
+                db.session.commit()
+                return jsonify(code=200,msg='添加品牌成功')
 
-        except Exception as e:
-            db.session.rollback()
-            raise e
+            except Exception as e:
+                db.session.rollback()
+                raise e
+    else:
+        return jsonify(code=1003,msg="先登录再进行操作")
+
+@app.route('/delbrand',methods=['POST'])
+@login_required
+def delbrand():
+    b_id=request.form['brandid']
 
 
 

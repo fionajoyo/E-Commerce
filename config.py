@@ -12,6 +12,7 @@ PORT     = '3306'
 DATABASE = 'flask1'
 #USERNAME = 'users'
 USERNAME = 'root'
-PASSWORD = '*'
+PASSWORD = 'YANGyan2001616'
 DB_URI = 'mysql+pymysql://{}:{}@{}:{}/{}'.format(USERNAME,PASSWORD,HOSTNAME,PORT,DATABASE)
+SECRET_KEY='123456'
 
