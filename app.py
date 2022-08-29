@@ -106,7 +106,7 @@ def login_required(view_func):
     @functools.wraps(view_func)
     def verify_token(*args, **kwargs):
         try:
-            # 在请求头上拿到token
+            # 在body体拿到token
             token = request.form["token"]
         except Exception:
 
