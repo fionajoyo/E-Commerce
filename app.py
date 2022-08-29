@@ -265,6 +265,15 @@ def delcom():
 
 
 
+@app.route('/getcom',methods=['POST'])
+@login_required
+def getcom():
+    token = request.form['token']
+    user = verify_token(token)
+    if user:
+        temp=com_info.query.filter_by().all();
+        return jsonify(temp)
+
 
 
 
