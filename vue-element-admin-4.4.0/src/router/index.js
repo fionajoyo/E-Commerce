@@ -108,17 +108,17 @@ export const asyncRoutes = [
         path: 'user/list',
         component: () => import('@/views/product/acl/user/list'),
         meta: {
-          title: '用户管理',
-        },
+          title: '用户管理'
+        }
       },
       {
         name: 'Role',
         path: 'role/list',
         component: () => import('@/views/product/acl/role/list'),
         meta: {
-          title: '角色管理',
-        },
-      },
+          title: '角色管理'
+        }
+      }
     ]
   },
 

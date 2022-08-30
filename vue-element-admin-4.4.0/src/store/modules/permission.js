@@ -25,11 +25,11 @@ const actions = {
       let accessedRoutes
       if (roles.includes('admin')) {
         // 如果是管理员用户则不进行过滤
-        console.log('管理员登录');
+        console.log('管理员登录')
         accessedRoutes = asyncRoutes || []
       } else {
         // 如果不是管理员则进行过滤
-        console.log('非管理员登录');
+        console.log('非管理员登录')
         accessedRoutes = []
       }
       commit('SET_ROUTES', accessedRoutes)
