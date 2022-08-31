@@ -9,12 +9,12 @@
               <div style="padding-top: 5%">
                 <span>
                   周同比&nbsp;56.67%
-                  <i class="el-icon-top"></i>
+                  <i class="el-icon-top" />
                 </span>
                 &nbsp;
                 <span>
                   日同比&nbsp;19.96%
-                  <i class="el-icon-bottom"></i>
+                  <i class="el-icon-bottom" />
                 </span>
               </div>
             </template>
@@ -30,7 +30,7 @@
         <el-card>
           <Detail title="访问量" count="88460">
             <template slot="charts">
-              <LineChart></LineChart>
+              <LineChart />
             </template>
             <template slot="footer">
               <div>
@@ -44,7 +44,7 @@
         <el-card>
           <Detail title="支付笔数" count="88460">
             <template slot="charts">
-              <BarChart></BarChart>
+              <BarChart />
             </template>
             <template slot="footer">
               <div>
@@ -58,18 +58,18 @@
         <el-card>
           <Detail title="运营活动效果" count="78%">
             <template slot="charts">
-              <ProgressChart></ProgressChart>
+              <ProgressChart />
             </template>
             <template slot="footer">
               <div>
                 <span>
                   周同比&nbsp;56.67%
-                  <i class="el-icon-top"></i>
+                  <i class="el-icon-top" />
                 </span>
                 &nbsp;
                 <span>
                   日同比&nbsp;19.96%
-                  <i class="el-icon-bottom"></i>
+                  <i class="el-icon-bottom" />
                 </span>
               </div>
             </template>
@@ -81,19 +81,19 @@
 </template>
 
 <script>
-import Detail from "./Detail";
-import LineChart from "./LineChart";
-import BarChart from "./BarChart";
-import ProgressChart from "./ProgressChart";
+import Detail from './Detail'
+import LineChart from './LineChart'
+import BarChart from './BarChart'
+import ProgressChart from './ProgressChart'
 export default {
-  name: "Card",
+  name: 'Card',
   components: {
     Detail,
     LineChart,
     BarChart,
-    ProgressChart,
-  },
-};
+    ProgressChart
+  }
+}
 </script>
 
 <style>

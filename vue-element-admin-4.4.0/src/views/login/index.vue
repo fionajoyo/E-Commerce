@@ -1,15 +1,16 @@
 <template>
   <div class="login-container">
+    <!-- el-form组件：elementUI插件里面的一个组件，经常展示表单元素  model：用于收集表单数据  rules：表单验证规则-->
     <el-form
       ref="loginForm"
       :model="loginForm"
       :rules="loginRules"
       class="login-form"
-      autocomplete="on"
+      auto-complete="on"
       label-position="left"
     >
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">登录</h3>
       </div>
 
       <el-form-item prop="username">
@@ -23,198 +24,134 @@
           name="username"
           type="text"
           tabindex="1"
-          autocomplete="on"
+          auto-complete="on"
         />
       </el-form-item>
 
-      <el-tooltip
-        v-model="capsTooltip"
-        content="Caps lock is On"
-        placement="right"
-        manual
-      >
-        <el-form-item prop="password">
-          <span class="svg-container">
-            <svg-icon icon-class="password" />
-          </span>
-          <el-input
-            :key="passwordType"
-            ref="password"
-            v-model="loginForm.password"
-            :type="passwordType"
-            placeholder="Password"
-            name="password"
-            tabindex="2"
-            autocomplete="on"
-            @keyup.native="checkCapslock"
-            @blur="capsTooltip = false"
-            @keyup.enter.native="handleLogin"
+      <el-form-item prop="password">
+        <span class="svg-container">
+          <svg-icon icon-class="password" />
+        </span>
+        <el-input
+          :key="passwordType"
+          ref="password"
+          v-model="loginForm.password"
+          :type="passwordType"
+          placeholder="Password"
+          name="password"
+          tabindex="2"
+          auto-complete="on"
+          @keyup.enter.native="handleLogin"
+        />
+        <span class="show-pwd" @click="showPwd">
+          <svg-icon
+            :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"
           />
-          <span class="show-pwd" @click="showPwd">
-            <svg-icon
-              :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"
-            />
-          </span>
-        </el-form-item>
-      </el-tooltip>
+        </span>
+      </el-form-item>
 
       <el-button
         :loading="loading"
         type="primary"
         style="width: 100%; margin-bottom: 30px"
         @click.native.prevent="handleLogin"
-      >登录</el-button>
-      <!-- 提示 -->
-      <div style="position: relative">
-        <div class="tips">
-          <span>Username : admin</span>
-          <span>Password : any</span>
-        </div>
-        <div class="tips">
-          <span style="margin-right: 18px">Username : editor</span>
-          <span>Password : any</span>
-        </div>
+      >
+        登录
+      </el-button>
 
-        <el-button
-          class="thirdparty-button"
-          type="primary"
-          @click="showDialog = true"
-        >
-          Or connect with
-        </el-button>
+      <div class="tips">
+        <span style="margin-right: 20px">username: admin</span>
+        <span> password: 111111</span>
       </div>
     </el-form>
-
-    <el-dialog title="Or connect with" :visible.sync="showDialog">
-      Can not be simulated on local, so please combine you own business
-      simulation! ! !
-      <br>
-      <br>
-      <br>
-      <social-sign />
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-import SocialSign from './components/SocialSignin'
+import { validUsername } from "@/utils/validate";
 
 export default {
-  name: 'Login',
-  components: { SocialSign },
+  name: "Login",
   data() {
+    //先不用在意：这里面在进行表单验证，验证用户名与密码操作
+    //回首在看这里
     const validateUsername = (rule, value, callback) => {
       if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
+        callback(new Error("Please enter the correct user name"));
       } else {
-        callback()
+        callback();
       }
-    }
+    };
     const validatePassword = (rule, value, callback) => {
       if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
+        callback(new Error("The password can not be less than 6 digits"));
       } else {
-        callback()
+        callback();
       }
-    }
+    };
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        username: "admin",
+        password: "111111",
       },
       loginRules: {
-        username: [
-          { required: true, trigger: 'blur' }
-        ],
+        // username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [
-          { required: true, trigger: 'blur', validator: validatePassword }
-        ]
+          { required: true, trigger: "blur", validator: validatePassword },
+        ],
       },
-      passwordType: 'password',
-      capsTooltip: false,
       loading: false,
-      showDialog: false,
+      passwordType: "password",
       redirect: undefined,
-      otherQuery: {}
-    }
+    };
   },
   watch: {
     $route: {
-      handler: function(route) {
-        const query = route.query
-        if (query) {
-          this.redirect = query.redirect
-          this.otherQuery = this.getOtherQuery(query)
-        }
+      handler: function (route) {
+        this.redirect = route.query && route.query.redirect;
       },
-      immediate: true
-    }
-  },
-  created() {
-    // window.addEventListener('storage', this.afterQRScan)
-  },
-  mounted() {
-    if (this.loginForm.username === '') {
-      this.$refs.username.focus()
-    } else if (this.loginForm.password === '') {
-      this.$refs.password.focus()
-    }
-  },
-  destroyed() {
-    // window.removeEventListener('storage', this.afterQRScan)
+      immediate: true,
+    },
   },
   methods: {
-    checkCapslock(e) {
-      const { key } = e
-      this.capsTooltip = key && key.length === 1 && key >= 'A' && key <= 'Z'
-    },
     showPwd() {
-      if (this.passwordType === 'password') {
-        this.passwordType = ''
+      if (this.passwordType === "password") {
+        this.passwordType = "";
       } else {
-        this.passwordType = 'password'
+        this.passwordType = "password";
       }
       this.$nextTick(() => {
-        this.$refs.password.focus()
-      })
+        this.$refs.password.focus();
+      });
     },
-    // 登录按钮回调
+    //登录业务：发请求，带着用户名与密码给服务器（成功与失败）
     handleLogin() {
+      //这里是在验证表单元素（用户名与密码）的是否符合规则
       this.$refs.loginForm.validate((valid) => {
+        //如果符合验证规则
         if (valid) {
-          // 按钮加载动画
-          this.loading = true
-
+          //按钮会有一个loading效果
+          this.loading = true;
+          //派发一个action:user/login,带着用户名与密码的载荷
           this.$store
-            .dispatch('user/login', this.loginForm)
+            .dispatch("user/login", this.loginForm)
             .then(() => {
-              // 请求发送后，路由跳转
-              this.$router.push({
-                path: this.redirect || '/',
-                query: this.otherQuery
-              })
-              this.loading = false
+              //登录成功进行路由的跳转
+              this.$router.push({ path: this.redirect || "/" });
+              //loading效果结束
+              this.loading = false;
             })
             .catch(() => {
-              this.loading = false
-            })
+              this.loading = false;
+            });
         } else {
-          console.log('error submit!!')
-          return false
+          console.log("error submit!!");
+          return false;
         }
-      })
+      });
     },
-    getOtherQuery(query) {
-      return Object.keys(query).reduce((acc, cur) => {
-        if (cur !== 'redirect') {
-          acc[cur] = query[cur]
-        }
-        return acc
-      }, {})
-    }
-  }
-}
+  },
+};
 </script>
 
 <style lang="scss">
@@ -272,8 +209,9 @@ $light_gray: #eee;
 .login-container {
   min-height: 100%;
   width: 100%;
-  background-color: $bg;
   overflow: hidden;
+  background: url(~@/assets/loginWallpaper.jpg);
+  background-size: 100% 100%;
 
   .login-form {
     position: relative;
@@ -324,18 +262,6 @@ $light_gray: #eee;
     color: $dark_gray;
     cursor: pointer;
     user-select: none;
-  }
-
-  .thirdparty-button {
-    position: absolute;
-    right: 0;
-    bottom: 6px;
-  }
-
-  @media only screen and (max-width: 470px) {
-    .thirdparty-button {
-      display: none;
-    }
   }
 }
 </style>
