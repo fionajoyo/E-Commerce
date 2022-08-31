@@ -68,90 +68,90 @@
 </template>
 
 <script>
-import { validUsername } from "@/utils/validate";
+import { validUsername } from '@/utils/validate'
 
 export default {
-  name: "Login",
+  name: 'Login',
   data() {
-    //先不用在意：这里面在进行表单验证，验证用户名与密码操作
-    //回首在看这里
+    // 先不用在意：这里面在进行表单验证，验证用户名与密码操作
+    // 回首在看这里
     const validateUsername = (rule, value, callback) => {
       if (!validUsername(value)) {
-        callback(new Error("Please enter the correct user name"));
+        callback(new Error('Please enter the correct user name'))
       } else {
-        callback();
+        callback()
       }
-    };
+    }
     const validatePassword = (rule, value, callback) => {
       if (value.length < 6) {
-        callback(new Error("The password can not be less than 6 digits"));
+        callback(new Error('The password can not be less than 6 digits'))
       } else {
-        callback();
+        callback()
       }
-    };
+    }
     return {
       loginForm: {
-        username: "admin",
-        password: "111111",
+        username: 'admin',
+        password: '111111'
       },
       loginRules: {
         // username: [{ required: true, trigger: 'blur', validator: validateUsername }],
         password: [
-          { required: true, trigger: "blur", validator: validatePassword },
-        ],
+          { required: true, trigger: 'blur', validator: validatePassword }
+        ]
       },
       loading: false,
-      passwordType: "password",
-      redirect: undefined,
-    };
+      passwordType: 'password',
+      redirect: undefined
+    }
   },
   watch: {
     $route: {
-      handler: function (route) {
-        this.redirect = route.query && route.query.redirect;
+      handler: function(route) {
+        this.redirect = route.query && route.query.redirect
       },
-      immediate: true,
-    },
+      immediate: true
+    }
   },
   methods: {
     showPwd() {
-      if (this.passwordType === "password") {
-        this.passwordType = "";
+      if (this.passwordType === 'password') {
+        this.passwordType = ''
       } else {
-        this.passwordType = "password";
+        this.passwordType = 'password'
       }
       this.$nextTick(() => {
-        this.$refs.password.focus();
-      });
+        this.$refs.password.focus()
+      })
     },
-    //登录业务：发请求，带着用户名与密码给服务器（成功与失败）
+    // 登录业务：发请求，带着用户名与密码给服务器（成功与失败）
     handleLogin() {
-      //这里是在验证表单元素（用户名与密码）的是否符合规则
+      // 这里是在验证表单元素（用户名与密码）的是否符合规则
       this.$refs.loginForm.validate((valid) => {
-        //如果符合验证规则
+        // 如果符合验证规则
         if (valid) {
-          //按钮会有一个loading效果
-          this.loading = true;
-          //派发一个action:user/login,带着用户名与密码的载荷
+          // 按钮会有一个loading效果
+          this.loading = true
+          // 派发一个action:user/login,带着用户名与密码的载荷
           this.$store
-            .dispatch("user/login", this.loginForm)
+            .dispatch('user/login', this.loginForm)
             .then(() => {
-              //登录成功进行路由的跳转
-              this.$router.push({ path: this.redirect || "/" });
-              //loading效果结束
-              this.loading = false;
+              // 登录成功进行路由的跳转
+              this.$router.push({ path: this.redirect || '/' })
+              // loading效果结束
+              this.loading = false
             })
             .catch(() => {
-              this.loading = false;
-            });
+              this.loading = false
+            })
         } else {
-          console.log("error submit!!");
-          return false;
+          console.log('error submit!!')
+          return false
         }
-      });
-    },
-  },
-};
+      })
+    }
+  }
+}
 </script>
 
 <style lang="scss">
