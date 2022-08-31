@@ -3,9 +3,9 @@
     <!-- 三级联动 -->
     <el-card style="margin: 20px 0">
       <categorySelect
-        :show="scene != 0"
         @getCategoryId="getCategoryId"
-      />
+        :show="scene != 0"
+      ></categorySelect>
     </el-card>
 
     <!-- spu列表展示修改与更新 -->
@@ -23,9 +23,12 @@
         </el-button>
         <!-- spu数据列表 -->
         <el-table style="width: 100%; margin: 10px 0" border :data="records">
-          <el-table-column type="index" label="序号" width="80" align />
-          <el-table-column prop="spuName" label="SPU名称" width="width" />
-          <el-table-column prop="description" label="SPU描述" width="width" />
+          <el-table-column type="index" label="序号" width="80" align>
+          </el-table-column>
+          <el-table-column prop="spuName" label="SPU名称" width="width">
+          </el-table-column>
+          <el-table-column prop="description" label="SPU描述" width="width">
+          </el-table-column>
           <el-table-column prop="prop" label="操作" width="width">
             <template slot-scope="{ row, $index }">
               <!-- 新增sku属性按钮 -->
@@ -35,7 +38,7 @@
                 size="mini"
                 title="新增"
                 @click="addSku(row)"
-              />
+              ></el-button>
               <!-- 修改按钮 -->
               <el-button
                 type="warning"
@@ -43,7 +46,7 @@
                 size="mini"
                 title="修改"
                 @click="changeSku(row)"
-              />
+              ></el-button>
               <!-- 查看按钮 -->
               <el-button
                 type="info"
@@ -51,20 +54,20 @@
                 size="mini"
                 title="查看"
                 @click="handler(row)"
-              />
+              ></el-button>
               <!-- 删除按钮 -->
               <el-popconfirm
-                title="这是一段内容确定删除吗？"
                 @onConfirm="deleteSpu(row)"
+                title="这是一段内容确定删除吗？"
               >
                 <el-button
-                  slot="reference"
                   type="danger"
                   icon="el-icon-delete"
                   size="mini"
                   title="删除"
                   style="margin-left: 10px"
-                />
+                  slot="reference"
+                ></el-button>
               </el-popconfirm>
             </template>
           </el-table-column>
@@ -79,45 +82,46 @@
           :total="total"
           @current-change="handleCurrentChange"
           @size-change="handleSizeChange"
-        />
+        >
+        </el-pagination>
       </div>
       <!-- 添加SPU|修改SPU -->
       <SpuForm
         v-show="scene == 1"
-        ref="spu"
         @changeScene="changeScene"
-      />
+        ref="spu"
+      ></SpuForm>
       <!-- 添加SKU -->
       <SkuForm
         v-show="scene == 2"
         ref="sku"
         @changeScenes="changeScenes"
-      />
+      ></SkuForm>
       <!-- sku信息展示对话框 -->
       <el-dialog
         :title="`${spu.spuName}的sku列表`"
         :visible.sync="dialogTableVisible"
         :before-close="closeDialog"
       >
-        <el-table v-loading="loading" :data="skuList">
+        <el-table :data="skuList" v-loading="loading">
           <el-table-column
             prop="skuName"
             label="名称"
             width="width"
-          />
+          ></el-table-column>
           <el-table-column
             prop="price"
             label="价格"
             width="width"
-          />
+          ></el-table-column>
           <el-table-column
             prop="weight"
             label="重量"
             width="width"
-          />
+          ></el-table-column>
           <el-table-column label="默认图片" width="width">
             <template slot-scope="{ row, $index }">
-              <img :src="row.skuDefaultImg" alt="" style="width: 100px">
+              <img :src="row.skuDefaultImg" alt="" style="width: 100px" />
             </template>
           </el-table-column>
         </el-table>
@@ -128,25 +132,21 @@
 
 <script>
 // 引入子组件
-import SpuForm from './SpuForm'
-import SkuForm from './SkuForm'
+import SpuForm from "./SpuForm";
+import SkuForm from "./SkuForm";
 
 export default {
-  name: 'Spu',
-  components: {
-    SpuForm,
-    SkuForm
-  },
+  name: "spu",
   data() {
     return {
       // 控制三级联动可操作性
       isShowTable: true,
       // 菜单一级id
-      category1Id: '',
+      category1Id: "",
       // 菜单二级id
-      category2Id: '',
+      category2Id: "",
       // 菜单三级id
-      category3Id: '',
+      category3Id: "",
       // spu列表属性当前页码
       page: 1,
       // 每一页展示多少数据
@@ -164,106 +164,110 @@ export default {
       // sku数据
       skuList: [],
       // 加载动画
-      loading: true
-    }
+      loading: true,
+    };
   },
   methods: {
     // 三级联动自定义事件，回传选中的三级ID
     getCategoryId({ category1Id, category2Id, category3Id }) {
-      this.category1Id = category1Id
-      this.category2Id = category2Id
-      this.category3Id = category3Id
+      this.category1Id = category1Id;
+      this.category2Id = category2Id;
+      this.category3Id = category3Id;
       if (category3Id) {
-        this.getSpuList()
+        this.getSpuList();
       } else {
         // 清除当前页展示的数据（没有3ID）
-        this.records = []
+        this.records = [];
       }
     },
     // 获取spu列表数据的方法
     async getSpuList() {
-      const { page, limit, category3Id } = this
-      const result = await this.$API.spu.reqSpuList(page, limit, category3Id)
+      const { page, limit, category3Id } = this;
+      let result = await this.$API.spu.reqSpuList(page, limit, category3Id);
       if (result.code === 200) {
-        this.records = result.data.records
-        this.total = result.data.total
+        this.records = result.data.records;
+        this.total = result.data.total;
       }
     },
     // 点击分页器页数按钮回调
     handleCurrentChange(page) {
-      this.page = page
-      this.getSpuList()
+      this.page = page;
+      this.getSpuList();
     },
     // 切换分页器展示数据条数
     handleSizeChange(limit) {
-      this.limit = limit
-      this.getSpuList()
+      this.limit = limit;
+      this.getSpuList();
     },
     // 添加Spu按钮回调
     addSpu() {
-      this.scene = 1
+      this.scene = 1;
       // 通知子组件发送请求
-      this.$refs.spu.addSpuData(this.category3Id)
+      this.$refs.spu.addSpuData(this.category3Id);
     },
     // 修改Spu按钮
     changeSku(row) {
-      this.scene = 1
-      // 获取子组件SpuForm子组件的
-      // 在父组件当中可以通过$ref获取子组件等等
-      this.$refs.spu.initSpuData(row)
+      this.scene = 1;
+      //获取子组件SpuForm子组件的
+      //在父组件当中可以通过$ref获取子组件等等
+      this.$refs.spu.initSpuData(row);
     },
     // SpuForm自定义事件回调
     changeScene(scene) {
       // 切换场景
-      this.scene = scene
+      this.scene = scene;
       // 重新获取spu数据
-      this.getSpuList()
+      this.getSpuList();
     },
     // skuForm自定义事件回调
     changeScenes(scene) {
       // 切换场景
-      this.scene = scene
+      this.scene = scene;
     },
     // 删除spu按钮回调
     async deleteSpu(row) {
-      const result = await this.$API.spu.reqDeleteSpu(row.id)
+      let result = await this.$API.spu.reqDeleteSpu(row.id);
       if (result.code === 200) {
-        this.$message({ type: 'success', message: '删除成功' })
+        this.$message({ type: "success", message: "删除成功" });
         // 重新获取列表数据
-        this.getSpuList()
+        this.getSpuList();
       }
     },
     // 添加sku按钮回调
     addSku(row) {
       // 切换场景为2
-      this.scene = 2
+      this.scene = 2;
       // 父组件调用子组件方法，让子组件发送请求
-      this.$refs.sku.getData(this.category1Id, this.category2Id, row)
+      this.$refs.sku.getData(this.category1Id, this.category2Id, row);
     },
     // 查看sku按钮回调
     async handler(spu) {
       // 弹出对话框
-      this.dialogTableVisible = true
+      this.dialogTableVisible = true;
 
-      this.spu = spu
+      this.spu = spu;
       // 获取sku列表数据
-      const result = await this.$API.spu.reqSkuList(spu.id)
+      let result = await this.$API.spu.reqSkuList(spu.id);
       if (result.code === 200) {
-        this.skuList = result.data
-        this.loading = false
+        this.skuList = result.data;
+        this.loading = false;
       }
     },
     // 关闭sku信息对话框回调
     closeDialog(done) {
       // 重置loading
-      this.loading = true
+      this.loading = true;
       // 清除sku信息
-      this.skuList = []
+      this.skuList = [];
       // 关闭对话框
-      done()
-    }
-  }
-}
+      done();
+    },
+  },
+  components: {
+    SpuForm,
+    SkuForm,
+  },
+};
 </script>
 
 <style>

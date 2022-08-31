@@ -1,31 +1,28 @@
 <template>
-  <div class="dashboard-container">
-    <component :is="currentRole" />
+  <div>
+    <Card></Card>
+    <Sale></Sale>
+    <Observe></Observe>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import adminDashboard from './admin'
-import editorDashboard from './editor'
-
+import Sale from './Sale'
+import Card from './Card'
+import Observe from './Observe'
 export default {
-  name: 'Dashboard',
-  components: { adminDashboard, editorDashboard },
-  data() {
-    return {
-      currentRole: 'adminDashboard'
-    }
+  name: '',
+  components:{
+    Card,
+    Sale,
+    Observe
   },
-  computed: {
-    ...mapGetters([
-      'roles'
-    ])
-  },
-  created() {
-    if (!this.roles.includes('admin')) {
-      this.currentRole = 'editorDashboard'
-    }
+  mounted(){
+    this.$store.dispatch('getData');
   }
 }
 </script>
+
+<style scoped>
+
+</style>
