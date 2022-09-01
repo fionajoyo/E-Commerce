@@ -80,6 +80,14 @@ class com_info(db.Model):
     com_discount=db.Column(db.String(255),nullable=False)
     com_state=db.Column(db.String(255),nullable=False)
 
+class order_info(db.Model):
+    __table__name='order_info'
+    order_id=db.Column(db.String(255),nullable=False,primary_key=True)
+    user_id=db.Column(db.String(255),nullable=False)
+    com_id=db.Column(db.String(255),nullable=False)
+    order_time=db.Column(db.String(255),nullable=False)
+    delivery_time=db.Column(db.String(255),nullable=False)
+
 
 @app.route('/login',methods=['POST'])
 def login():
@@ -203,6 +211,8 @@ def delbrand():
             db.session.rollback()
             return jsonify(code=1008,msg='品牌删除失败')
             raise e
+    else:
+        return jsonify(code=1003,msg="先登录再进行操作")
 
 @app.route('/addcom',methods=['POST'])
 @login_required
@@ -238,6 +248,8 @@ def addcom():
             print(e)
             db.session.rollback()
             return jsonify(code=1007,msg='上传商品失败')
+    else:
+        return jsonify(code=1003,msg="先登录再进行操作")
 
 
 
@@ -262,6 +274,8 @@ def delcom():
             db.session.rollback()
             return jsonify(code=1010,msg='商品删除失败')
             raise e
+    else:
+        return jsonify(code=1003,msg="先登录再进行操作")
 
 
 
@@ -273,14 +287,56 @@ def getcom():
     if user:
         temp=com_info.query.filter_by().all();
         return jsonify(temp)
+    else:
+        return jsonify(code=1003,msg="先登录再进行操作")
+
+@app.route('/addorder',methods=['POST'])
+@login_required
+def addorder():
+    token=request.form['token']
+    ord_id=request.form['orderid']
+    com_id=request.form['comid']
+    ord_time=request.form['ordertime']
+    dey_time=request.form['deliverytime']
+    user=verify_token(token)
+
+    if user:
+        temp=order_info(order_id=ord_id,user_id=user.user_id,com_id=com_id,order_time=ord_time,delivery_time=dey_time)
+        try:
+            db.session.add(temp)
+            db.session.commit()
+            return jsonify(code=0,msg='success')
+        except Exception as e:
+
+            raise e
+            return jsonify(code=1015,msg='fail')
+    else:
+        return jsonify(code=1003,msg="先登录再进行操作")
 
 
+
+@app.route('/delorder',methods=['POST'])
+def delorder():
+    token = request.form['token']
+    user = verify_token(token)
+    if user:
+        ordid=request.form['orderid']
+        try:
+            order_info.query.filter_by(order_id=ordid).delete()
+            db.session.commit()
+            return jsonify(code=0,msg='success')
+        except Exception as e :
+            raise e
+            return jsonify(code=1016,msg='删除订单失败')
+
+    else:
+        return jsonify(code=1003, msg="先登录再进行操作")
 
 
 
 @app.route('/test')
 def test():
-    user = user_info.query.filter_by(user_name="1", password="1").first()
+    #user = user_info.query.filter_by(user_name="1", password="1").first()
     return 'hello'
 
 
