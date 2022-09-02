@@ -5,8 +5,8 @@
 # -*- coding: UTF-8 -*-
 """
 @Author: Yangyan
-@Time: 2022/4/8 
-@FileName: app2.py
+@Time: 2022/8/10
+@FileName: app.py
 """
 
 from flask import Flask, render_template, request, jsonify, current_app
@@ -91,6 +91,9 @@ class order_info(db.Model):
 
 @app.route('/login',methods=['POST'])
 def login():
+    #Post params：
+    #userid
+    #password
     # print(request)
     u_id = request.form['userid']
     # print(u_name)
@@ -133,6 +136,11 @@ def login_required(view_func):
 
 @app.route('/register',methods=['POST'])
 def register():
+    #Post params：
+    #username
+    #password
+    #id
+
     print(request.form)
     u_name = request.form['username']
     print(u_name)
@@ -145,7 +153,10 @@ def register():
         return jsonify(code=1005,msg='用户已经存在')
     else:
         try:
-            temp = user_info(user_name=u_name,user_id=u_id, password=p_word,user_level='1')
+            temp = user_info(user_name=u_name,
+                             user_id=u_id,
+                             password=p_word,
+                             user_level='1')
             db.session.add(temp)
             db.session.commit()
             return jsonify(code=0,msg='注册成功')
@@ -179,7 +190,10 @@ def addbrand():
             return jsonify(code=1006,msg='品牌id已经存在')
         else:
             try:
-                temp = brand_info(brand_id=b_id,brand_name=b_name,brand_salescount='0',brand_state='0')
+                temp = brand_info(brand_id=b_id,
+                                  brand_name=b_name,
+                                  brand_salescount='0',
+                                  brand_state='0')
                 db.session.add(temp)
                 db.session.commit()
                 return jsonify(code=0,msg='添加品牌成功')
@@ -217,6 +231,15 @@ def delbrand():
 @app.route('/addcom',methods=['POST'])
 @login_required
 def addcom():
+    # Post params：
+    #token
+    #comtitle
+    #comclass
+    #comid
+    #brandid
+    #comprice
+    #brandid
+    #discount
     token=request.form['token']
 
     user = verify_token(token)
@@ -239,8 +262,14 @@ def addcom():
             com=com_info.query.filter_by(com_id=c_id).first()
             if com:
                 return jsonify(code=1009,msg='商品已经存在')
-            temp = com_info(com_id=c_id, com_title=c_title, com_class=c_class, com_price=c_price, user_id=u_id,
-                            brand_id=b_id, com_discount=c_discount, com_state=c_state)
+            temp = com_info(com_id=c_id,
+                            com_title=c_title,
+                            com_class=c_class,
+                            com_price=c_price,
+                            user_id=u_id,
+                            brand_id=b_id,
+                            com_discount=c_discount,
+                            com_state=c_state)
             db.session.add(temp)
             db.session.commit()
             return jsonify(code=0,msg='添加商品成功')
@@ -282,6 +311,9 @@ def delcom():
 @app.route('/getcom',methods=['POST'])
 @login_required
 def getcom():
+    # Post params：
+    #token
+
     token = request.form['token']
     user = verify_token(token)
     if user:
@@ -289,10 +321,67 @@ def getcom():
         return jsonify(temp)
     else:
         return jsonify(code=1003,msg="先登录再进行操作")
+@app.route('/changecom',methods=['POST'])
+@login_required
+def changecom():
+    # Post params：
+    #token
+    #comtitle
+    #comclass
+    #comid
+    #brandid
+    #comprice
+    #brandid
+    #discount
+    token=request.form['token']
+
+    user = verify_token(token)
+    if user:
+        print(user.user_level)
+        if user.user_level == '0':
+            return jsonify(code=1004, msg='用户权限不足')
+        c_id=request.form['comid']
+
+        c_title=request.form['comtitle']
+        c_class=request.form['comclass']
+        c_price=request.form['comprice']
+        u_id=user.user_id
+        b_id=request.form['brandid']
+        c_discount=request.form['discount']
+        c_state='0'
+        print(c_id,c_title,c_class,c_price,u_id,b_id,c_discount,c_state)
+
+        try:
+            com=com_info.query.filter_by(com_id=c_id).first()
+            if com:
+                return jsonify(code=1009,msg='商品已经存在')
+            com.com_id=c_id,
+            com.com_title=c_title,
+            com.com_class=c_class,
+            com.com_price=c_price,
+            com.user_id=u_id,
+            com.brand_id=b_id,
+            com.com_discount=c_discount,
+            com.com_state=c_state
+            db.session.commit()
+            return jsonify(code=0,msg='修改商品成功')
+        except Exception as e:
+            print(e)
+            db.session.rollback()
+            return jsonify(code=1007,msg='修改商品失败')
+    else:
+        return jsonify(code=1003,msg="先登录再进行操作")
+
 
 @app.route('/addorder',methods=['POST'])
 @login_required
 def addorder():
+    # Post params：
+    #token
+    #orderid
+    #comid
+    #ordertime
+    #deliverytime
     token=request.form['token']
     ord_id=request.form['orderid']
     com_id=request.form['comid']
@@ -301,7 +390,12 @@ def addorder():
     user=verify_token(token)
 
     if user:
-        temp=order_info(order_id=ord_id,user_id=user.user_id,com_id=com_id,order_time=ord_time,delivery_time=dey_time)
+        temp=order_info(order_id=ord_id
+                        ,user_id=user.user_id,
+                        com_id=com_id,
+                        order_time=ord_time,
+                        delivery_time=dey_time
+                        )
         try:
             db.session.add(temp)
             db.session.commit()
@@ -316,7 +410,12 @@ def addorder():
 
 
 @app.route('/delorder',methods=['POST'])
+@login_required
 def delorder():
+    # Post params：
+    # token
+    # orderid
+
     token = request.form['token']
     user = verify_token(token)
     if user:
@@ -331,6 +430,37 @@ def delorder():
 
     else:
         return jsonify(code=1003, msg="先登录再进行操作")
+
+
+@app.route('/changeorder',methods=['POST'])
+@login_required
+def changeorder():
+    # Post params：
+    # token
+    # order_id
+    # changetype
+    # changedata
+
+    token=request.form['token']
+    user=verify_token(token)
+    if user:
+        change_id=request.form['order_id']
+        changetype=request.form['changetype']
+        changedata=request.form['changedata']
+        order=order_info.query.filter_by(order_id=change_id).first();
+        if changetype=='1':
+            order.order_time=changedata
+        elif changetype=='0':
+            order.delivery_time=changedata
+        elif changetype=='2':
+            order.com_id=changedata
+        elif changetype=='3':
+            order.user_id=changedata
+        elif changetype=='4':
+            order_id=changedata
+    else:
+        return jsonify(code=1003,msg="先登录再进行操作")
+
 
 
 
